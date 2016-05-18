@@ -9,18 +9,35 @@ struct node {
     bool color; //true: red, false: blue
 };
 
-/*    0 1 2
-    0 R - R
-    1 - - -
-    2 B - B
+/*  R = 2, B = 1
+      0 1 2 j
+    0 R - R |
+    1 - - - |
+    2 B - B |
+    i_______|
 */
-
 void setBoard(char board[3]) {
+    // Clear Board
     for (int i = 0; i < 3; i++) {
         for (int j = 0; j < 3; j++) {
             board[i][j] = 0;
         }
     }
+    
+    // Initialize pieces onto board
+    board[0][0] = 2;
+    board[0][2] = 2;
+    board[2][0] = 1;
+    board[2][2] = 1;
+}
+
+node* solve(char board[3]) {
+    node *q;
+    q->parent = q;
+    q->x = 0;
+    q->y = 0;
+    q->f = 0;
+    q->color = true;
     
 }
 
