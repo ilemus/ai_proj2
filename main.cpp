@@ -3,6 +3,7 @@
 using namespace std;
 
 #define INFINITY INT_MAX
+#define DEBUG true
 
 struct node {
     node *parent;
@@ -17,8 +18,8 @@ struct list {
     node *q;
 };
 
-list *open_list;
-list *closed_list;
+static list *open_list;
+static list *closed_list;
 
 char solution[][] {
     {1, 0, 1},
@@ -58,6 +59,10 @@ node* getLowestNode() {
         }
         
         temp = temp->parent;
+    }
+    
+    if (DEBUG) {
+        cout << "Lowest Node's f: " << lowest->f << endl;
     }
     return lowest;
 }
@@ -100,16 +105,26 @@ node* solve(char board[][3]) {
             for (int j = 0; j < 3; j++) {
                 if (valid(p, i, j)) {
                     node *c->parent = p;
-                    if (isSolution(p)) {
-                        q = p;
+                    setValidMove(c);
+                    if (isSolution(c)) {
+                        q = c;
                         solved = true;
                         break;
                     } else {
-                        p->f = p->parent->f + 1;
+                        c->f = c->parent->f + 1;
+                        if (!alreadyOpen(c)) {
+                            if (!alreadyClosed(c)) {
+                                temp->child = 0;
+                                temp->parent = open_list;
+                                temp->q = c;
+                                open_list = temp;
+                            }
+                        }
                     }
                 }
             }
         }
+        deleteNode(p);
         if (solved) {
             break;
         }
