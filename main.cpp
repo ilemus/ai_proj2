@@ -77,12 +77,6 @@ node* solve(char board[][3]) {
     q->f = INFINITY;
     setBoard(q->board);
     q->board[0][1] = 9;
-    open_list->q = q;
-    open_list->parent = 0;
-    open_list->child = 0;
-    closed_list->q = 0;
-    closed_list->parent = 0;
-    closed_list->child = 0;
     
     q->parent = q;
     q->board = board;
@@ -90,11 +84,11 @@ node* solve(char board[][3]) {
     q->color = true;
     
     temp->child = 0;
-    temp->parent = open_list;
+    temp->parent = 0;
     temp->q = q;
     
-    open_list->child = temp;
-    open_list->parent = open_list;
+    open_list = temp;
+    closed_list = temp;
     
     // Main loop
     // TODO: open list MUST have a parent with 0 in which it should not be
