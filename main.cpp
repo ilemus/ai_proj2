@@ -97,6 +97,8 @@ node* solve(char board[][3]) {
     open_list->parent = open_list;
     
     // Main loop
+    // TODO: open list MUST have a parent with 0 in which it should not be
+    // Evaluated, investigate pointer...
     while (open_list->parent != 0) {
         node *p;
         *p = getLowestNode();
