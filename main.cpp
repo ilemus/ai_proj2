@@ -21,6 +21,9 @@ struct list {
 static list *open_list;
 static list *closed_list;
 
+// Red's turn first
+static bool turn = true;
+
 char solution[][] {
     {1, 0, 1},
     {0, 0, 0},
@@ -67,11 +70,92 @@ node* getLowestNode() {
     return lowest;
 }
 
+int getHeuristic(Node x) {
+    int total = 0;
+    for (int i = 0; i < 3; i++) {
+        for (int j = 0; j < 3; j++) {
+            if (x->board[i][j] == solution[i][j]) {
+                total++;
+            }
+        }
+    }
+    return total;
+}
+
+void setto(char a[][3], char b[][3]) {
+    for (int i = 0; i < 3; i++) {
+        for (int j = 0; j < 3; j++) {
+            a[i][j] = b[i][j];
+        }
+    }
+}
+
+int toPositive(int x) {
+    if (x >=0) {
+        return x;
+    } else {
+        return -1 * x;
+    }
+}
+
+bool valid(node *p, int x, int y) {
+    char tempp[3][3];
+    setto(tempp, p->board);
+    for (int i = 0; i < 3; i++) {
+        for (int j = 0; j < 3; j++) {
+            if (turn) {
+                if (tempp[i][j] == 2) {
+                    if ((toPositive(i - x) == 2 && toPositive(j - y) == 1)
+                        || (toPositive(i - x) == 1 && toPositive(j - y) == 2)) {
+                        p->board[i][j] = 0;
+                        p->board[x][y] = 2;
+                        return true;
+                    }
+                }
+            } else {
+                if (tempp[i][j] == 1) {
+                    if ((toPositive(i - x) == 2 && toPositive(j - y) == 1)
+                        || (toPositive(i - x) == 1 && toPositive(j - y) == 2)) {
+                        p->board[i][j] = 0;
+                        p->board[x][y] = 1;
+                        return true;
+                    }
+                }
+            }
+        }
+    }
+    return false;
+}
+
+bool isSolution(char x[][3]) {
+    for (int i = 0; i < 3; i++) {
+        for (int j = 0; j < 3; j++) {
+            if (x[i][j] == solution[i][j]) {
+                continue;
+            } else {
+                return false;
+            }
+        }
+    }
+}
+
+void popNode(list *p) {
+    list *temp = open_list;
+    if (!(p == temp)) {
+        while (temp->parent != p) {
+            temp = temp->parent;
+        }
+        
+    } else {
+        temp = temp->parent;
+        temp->child = 0;
+    }
+}
+
 node* solve(char board[][3]) {
     node *q;
     list *temp;
     bool solved = false;
-    bool turn = true;
     
     // Setup queue and initial node
     q->f = INFINITY;
@@ -101,13 +185,12 @@ node* solve(char board[][3]) {
             for (int j = 0; j < 3; j++) {
                 if (valid(p, i, j)) {
                     node *c->parent = p;
-                    setValidMove(c);
-                    if (isSolution(c)) {
+                    if (isSolution(c->board)) {
                         q = c;
                         solved = true;
                         break;
                     } else {
-                        c->f = c->parent->f + 1;
+                        c->f = c->parent->f + 1 + getHeuristic(c);
                         if (!alreadyOpen(c)) {
                             if (!alreadyClosed(c)) {
                                 temp->child = 0;
