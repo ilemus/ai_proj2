@@ -164,9 +164,44 @@ void popNode(list *p) {
 bool alreadyOpen(node *q) {
     node *temp = open_list;
     if (open_list != 0) {
-        while (open_list != 0) {
-            
+        while (temp->parent != 0) {
+            temp = temp->parent;
         }
+        while (temp->child != 0) {
+            if (isEqual(q->board, temp->q->board) {
+                return true;
+            } else {
+                temp = temp->child;
+            }
+        }
+        
+        if (isEqual(q->board, temp->q->board) {
+            return true;
+        }
+    } else {
+        return false;
+    }
+}
+
+bool alreadyClosed(node *q) {
+    node *temp = closed_list;
+    if (closed_list != 0) {
+        while (temp->parent != 0) {
+            temp = temp->parent;
+        }
+        while (temp->child != 0) {
+            if (isEqual(q->board, temp->q->board) {
+                return true;
+            } else {
+                temp = temp->child;
+            }
+        }
+        
+        if (isEqual(q->board, temp->q->board) {
+            return true;
+        }
+    } else {
+        return false;
     }
 }
 
@@ -176,12 +211,10 @@ node* solve(char board[][3]) {
     bool solved = false;
     
     // Setup queue and initial node
-    q->f = INFINITY;
-    setBoard(q->board);
-    q->board[0][1] = 9;
+    q->f = 0;
     
-    q->parent = q;
-    q->board = board;
+    q->parent = 0;
+    setto(q->board, board);
     q->f = 0;
     q->turn = true;
     
@@ -202,7 +235,9 @@ node* solve(char board[][3]) {
         for (int i = 0; i < 3; i++) {
             for (int j = 0; j < 3; j++) {
                 if (valid(p, i, j)) {
-                    node *c->parent = p;
+                    node *c;
+                    c->parent = p;
+                    c->turn = !p->turn;
                     if (isSolution(c->board)) {
                         q = c;
                         solved = true;
