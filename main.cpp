@@ -9,7 +9,7 @@ struct node {
     node *parent;
     char board[3][3];
     int f; //current distance from epoch
-    bool color; //true: red, false: blue
+    bool turn; //true: red, false: blue
 };
 
 struct list {
@@ -82,6 +82,15 @@ int getHeuristic(Node x) {
     return total;
 }
 
+bool isEqual(char a[][3], char b[][3]) {
+    for (int i = 0; i < 3; i++) {
+        for (int j = 0; j < 3; j++) {
+            if (a[i][j] != b[i][j]) return false;
+        }
+    }
+    return true;
+}
+
 void setto(char a[][3], char b[][3]) {
     for (int i = 0; i < 3; i++) {
         for (int j = 0; j < 3; j++) {
@@ -103,7 +112,7 @@ bool valid(node *p, int x, int y) {
     setto(tempp, p->board);
     for (int i = 0; i < 3; i++) {
         for (int j = 0; j < 3; j++) {
-            if (turn) {
+            if (p->turn) {
                 if (tempp[i][j] == 2) {
                     if ((toPositive(i - x) == 2 && toPositive(j - y) == 1)
                         || (toPositive(i - x) == 1 && toPositive(j - y) == 2)) {
@@ -152,6 +161,15 @@ void popNode(list *p) {
     }
 }
 
+bool alreadyOpen(node *q) {
+    node *temp = open_list;
+    if (open_list != 0) {
+        while (open_list != 0) {
+            
+        }
+    }
+}
+
 node* solve(char board[][3]) {
     node *q;
     list *temp;
@@ -165,19 +183,19 @@ node* solve(char board[][3]) {
     q->parent = q;
     q->board = board;
     q->f = 0;
-    q->color = true;
+    q->turn = true;
     
     temp->child = 0;
     temp->parent = 0;
     temp->q = q;
     
     open_list = temp;
-    closed_list = temp;
+    closed_list = 0;
     
     // Main loop
     // TODO: open list MUST have a parent with 0 in which it should not be
     // Evaluated, investigate pointer...
-    while (open_list->parent != 0) {
+    while (open_list != 0) {
         node *p;
         *p = getLowestNode();
         popNode(p);
