@@ -24,7 +24,7 @@ static list *closed_list;
 // Red's turn first
 static bool turn = true;
 
-char solution[][] {
+char solution[][3] = {
     {1, 0, 1},
     {0, 0, 0},
     {2, 0, 2}
@@ -76,7 +76,7 @@ node* getLowestNode() {
     return lowest;
 }
 
-int getHeuristic(Node x) {
+int getHeuristic(node *x) {
     int total = 0;
     for (int i = 0; i < 3; i++) {
         for (int j = 0; j < 3; j++) {
@@ -155,20 +155,20 @@ bool isSolution(char x[][3]) {
 }
 
 bool alreadyOpen(node *q) {
-    node *temp = open_list;
+    list *temp = open_list;
     if (open_list != 0) {
         while (temp->parent != 0) {
             temp = temp->parent;
         }
         while (temp->child != 0) {
-            if (isEqual(q->board, temp->q->board) {
+            if (isEqual(q->board, temp->q->board)) {
                 return true;
             } else {
                 temp = temp->child;
             }
         }
         
-        if (isEqual(q->board, temp->q->board) {
+        if (isEqual(q->board, temp->q->board)) {
             return true;
         }
     } else {
@@ -177,20 +177,20 @@ bool alreadyOpen(node *q) {
 }
 
 bool alreadyClosed(node *q) {
-    node *temp = closed_list;
+    list *temp = closed_list;
     if (closed_list != 0) {
         while (temp->parent != 0) {
             temp = temp->parent;
         }
         while (temp->child != 0) {
-            if (isEqual(q->board, temp->q->board) {
+            if (isEqual(q->board, temp->q->board)) {
                 return true;
             } else {
                 temp = temp->child;
             }
         }
         
-        if (isEqual(q->board, temp->q->board) {
+        if (isEqual(q->board, temp->q->board)) {
             return true;
         }
     } else {
