@@ -98,6 +98,8 @@ bool isEqual(char a[][3], char b[][3]) {
 }
 
 void setto(char a[][3], char b[][3]) {
+    if (DEBUG)
+        cout << "SUCCESS setto" << endl;
     for (int i = 0; i < 3; i++) {
         for (int j = 0; j < 3; j++) {
             a[i][j] = b[i][j];
@@ -244,11 +246,10 @@ node* solve(char board[][3]) {
     node *q;
     list *temp;
     bool solved = false;
-    
     // Setup queue and initial node
-    q->f = 0;
-    
-    q->parent = 0;
+    temp = new list;
+    q = new node;
+    q->parent = NULL;
     setto(q->board, board);
     q->f = 0;
     q->turn = true;
@@ -258,13 +259,17 @@ node* solve(char board[][3]) {
     temp->q = q;
     
     open_list = temp;
-    closed_list = 0;
+    closed_list = NULL;
     
     // Main loop
     // TODO: open list MUST have a parent with 0 in which it should not be
     // Evaluated, investigate pointer...
     while (open_list != 0) {
         node *p;
+        if (DEBUG)
+            cout << "Success while loop";
+        if (DEBUG)
+            cout << " " << open_list << " c:" << closed_list << endl;
         p = getLowestNode();
         
         // Search entire board for valid moves and evaluate them
@@ -272,6 +277,7 @@ node* solve(char board[][3]) {
             for (int j = 0; j < 3; j++) {
                 if (valid(p, i, j)) {
                     node *c;
+                    c = new node;
                     c->parent = p;
                     c->turn = !p->turn;
                     if (isSolution(c->board)) {
@@ -279,9 +285,12 @@ node* solve(char board[][3]) {
                         solved = true;
                         break;
                     } else {
+                        if (DEBUG)
+                            cout << "NOT SOLUTION" << endl;
                         c->f = c->parent->f + 1 + getHeuristic(c);
                         if (!alreadyOpen(c)) {
                             if (!alreadyClosed(c)) {
+                                temp = new list;
                                 temp->child = 0;
                                 temp->parent = open_list;
                                 temp->q = c;
