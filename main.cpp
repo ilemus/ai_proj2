@@ -198,6 +198,48 @@ bool alreadyClosed(node *q) {
     }
 }
 
+void deleteNode(node *p) {
+    list *l = open_list;
+    list *del = 0;
+
+    // resets the list to the beginning for searching
+    while (l->parent != 0) {
+        l = l->parent;
+    }
+    
+    // if q is the only node left in the open_list then delete it
+    if (l->q == p) {
+        del = open_list;
+        open_list = 0;
+    } else {
+        while (l->child != 0) {
+            if (l->q == p) {
+                del = l;
+                list *temp = l->child;
+                l = l->parent;
+                l->child = temp;
+                break;
+            }
+        }
+        
+        if (l->child == 0 && del == 0) {
+            if (l->q == p) {
+                del = l;
+                list *temp = l->child;
+                l = l->parent;
+                l->child = temp;
+            } else {
+                return;
+            }
+        }
+    }
+    
+    // Add deleted node to the closed list
+    del->child = 0;
+    del->parent = closed_list;
+    closed_list = del;
+}
+
 node* solve(char board[][3]) {
     node *q;
     list *temp;
@@ -224,6 +266,8 @@ node* solve(char board[][3]) {
     while (open_list != 0) {
         node *p;
         p = getLowestNode();
+        
+        // Search entire board for valid moves and evaluate them
         for (int i = 0; i < 3; i++) {
             for (int j = 0; j < 3; j++) {
                 if (valid(p, i, j)) {
