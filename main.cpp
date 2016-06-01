@@ -58,10 +58,16 @@ node* getLowestNode() {
     temp = open_list;
     while (temp->parent != 0) {
         if (temp->q->f < lowest->f) {
-            lowest = q;
+            lowest = temp->q;
         }
         
         temp = temp->parent;
+    }
+    
+    if (temp->parent == 0) {
+        if (temp->q->f < lowest->f) {
+            lowest = temp->q;
+        }
     }
     
     if (DEBUG) {
@@ -148,19 +154,6 @@ bool isSolution(char x[][3]) {
     }
 }
 
-void popNode(list *p) {
-    list *temp = open_list;
-    if (!(p == temp)) {
-        while (temp->parent != p) {
-            temp = temp->parent;
-        }
-        
-    } else {
-        temp = temp->parent;
-        temp->child = 0;
-    }
-}
-
 bool alreadyOpen(node *q) {
     node *temp = open_list;
     if (open_list != 0) {
@@ -230,8 +223,7 @@ node* solve(char board[][3]) {
     // Evaluated, investigate pointer...
     while (open_list != 0) {
         node *p;
-        *p = getLowestNode();
-        popNode(p);
+        p = getLowestNode();
         for (int i = 0; i < 3; i++) {
             for (int j = 0; j < 3; j++) {
                 if (valid(p, i, j)) {
