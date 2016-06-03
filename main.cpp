@@ -94,7 +94,7 @@ int getHeuristic(node *x) {
             }
         }
     }
-    return total;
+    return 4 - total;
 }
 
 bool isEqual(char a[][3], char b[][3]) {
@@ -128,7 +128,7 @@ bool valid(node *p, int x, int y) {
     for (int i = 0; i < 3; i++) {
         for (int j = 0; j < 3; j++) {
             if (p->turn) {
-                if (tempp[i][j] == 2) {
+                if (tempp[i][j] == 2 && tempp[x][y] == 0) {
                     if ((toPositive(i - x) == 2 && toPositive(j - y) == 1)
                         || (toPositive(i - x) == 1 && toPositive(j - y) == 2)) {
                         p->board[i][j] = 0;
@@ -139,7 +139,7 @@ bool valid(node *p, int x, int y) {
                     }
                 }
             } else {
-                if (tempp[i][j] == 1) {
+                if (tempp[i][j] == 1 && tempp[x][y] == 0) {
                     if ((toPositive(i - x) == 2 && toPositive(j - y) == 1)
                         || (toPositive(i - x) == 1 && toPositive(j - y) == 2)) {
                         p->board[i][j] = 0;
@@ -341,12 +341,26 @@ node* solve(char board[][3]) {
     return q;
 }
 
+void printSolution(node *p) {
+    node *x = p;
+    if (DEBUG)
+        cout << "------------------------------printing solution------------------------------" << endl;
+    while (x != 0) {
+        printBoard(x->board);
+        x = x-> parent;
+    }
+}
+
 int main() {
     char board[3][3];
     node *solution;
     
-    cout << "A-star search algorithmn applied to knight problem" << endl;
+    cout << "------------------------------A-star search algorithmn applied to knight problem" << endl;
     
     setBoard(board);
     solution = solve(board);
+    printSolution(solution);
+    if (DEBUG)
+        cout << "Returns success " << solution << endl;
+    
 }
