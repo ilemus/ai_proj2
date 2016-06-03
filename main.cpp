@@ -3,7 +3,7 @@
 using namespace std;
 
 #define INFINITY INT_MAX
-#define DEBUG true
+#define DEBUG false
 
 struct node {
     node *parent;
@@ -22,7 +22,7 @@ static list *open_list;
 static list *closed_list;
 
 // Red's turn first
-static bool turn = true;
+static bool display = false;
 
 char solution[][3] = {
     {1, 0, 1},
@@ -79,7 +79,7 @@ node* getLowestNode() {
         }
     }
     
-    if (DEBUG) {
+    if (DEBUG && true) {
         cout << "Lowest Node's f: " << lowest->f << endl;
     }
     return lowest;
@@ -94,7 +94,7 @@ int getHeuristic(node *x) {
             }
         }
     }
-    return 4 - total;
+    return 9 - total;
 }
 
 bool isEqual(char a[][3], char b[][3]) {
@@ -133,7 +133,7 @@ bool valid(node *p, int x, int y) {
                         || (toPositive(i - x) == 1 && toPositive(j - y) == 2)) {
                         p->board[i][j] = 0;
                         p->board[x][y] = 2;
-                        if (DEBUG)
+                        if (DEBUG && display)
                             cout << "Turn" << p->turn << "Valid x: " << x << " y: " << y << endl;
                         return true;
                     }
@@ -144,7 +144,7 @@ bool valid(node *p, int x, int y) {
                         || (toPositive(i - x) == 1 && toPositive(j - y) == 2)) {
                         p->board[i][j] = 0;
                         p->board[x][y] = 1;
-                        if (DEBUG)
+                        if (DEBUG && display)
                             cout << "Turn" << p->turn << "Valid x: " << x << " y: " << y << endl;
                         return true;
                     }
@@ -174,19 +174,20 @@ bool alreadyOpen(node *q) {
             temp = temp->parent;
         }
         while (temp->child != 0) {
-            if (isEqual(q->board, temp->q->board)) {
-                return true;
+            if (isEqual(q->board, temp->q->board) && q->f >= temp->q->f) {
+            	return true;
             } else {
                 temp = temp->child;
             }
         }
         
-        if (isEqual(q->board, temp->q->board)) {
-            return true;
+        if (isEqual(q->board, temp->q->board) && q->f >= temp->q->f) {
+        	return true;
         }
     } else {
         return false;
     }
+    return false;
 }
 
 bool alreadyClosed(node *q) {
@@ -196,48 +197,72 @@ bool alreadyClosed(node *q) {
             temp = temp->parent;
         }
         while (temp->child != 0) {
-            if (isEqual(q->board, temp->q->board)) {
-                return true;
+            if (isEqual(q->board, temp->q->board) && q->f >= temp->q->f) {
+            	return true;
             } else {
                 temp = temp->child;
             }
         }
         
-        if (isEqual(q->board, temp->q->board)) {
-            return true;
+        if (isEqual(q->board, temp->q->board) && q->f >= temp->q->f) {
+        	return true;
         }
     } else {
         return false;
     }
+    return false;
+}
+
+void printClosedList() {
+	list *p = closed_list;
+	cout << "_______________LIST_____________" << endl;
+	while (p != 0) {
+		if (DEBUG && true)
+		cout << "[" << p->child << " | " << p << " | " << p->parent << "], ";
+		p = p->parent;
+	}
+	if (DEBUG && true) cout << endl;
+}
+
+void printOpenList() {
+	list *p = open_list;
+	cout << "_______________LIST_____________" << endl;
+	while (p != 0) {
+		if (DEBUG && true)
+			cout << "[" << p->child << " | " << p << " | " << p->parent << "]" << endl;
+		// printBoard(p->q->board);
+		p = p->parent;
+	}
 }
 
 void deleteNode(node *p) {
     list *l = open_list;
-    list *del = 0;
-    if (DEBUG)
-        cout << "Delete parent node" << endl;
+    list *del = NULL;
+
     // resets the list to the beginning for searching
     while (l->parent != 0) {
         l = l->parent;
     }
     
+    if (DEBUG && true) printOpenList();
+    // if (DEBUG && true) printClosedList();
+
     // if q is the only node left in the open_list then delete it
     if (l->q == p && l->child == 0) {
         del = open_list;
         open_list = 0;
-        if (DEBUG)
+        if (DEBUG && true)
             cout << "q was the only node in open list" << endl;
     } else {
         while (l->child != 0) {
-            if (DEBUG)
-                cout << "l->child " << l->child << endl;
             if (l->q == p) {
-                if (DEBUG)
-                    cout << "Deleting node" << endl;
+                if (DEBUG && true)
+                    cout << "____Deleting node: " << l << "____" << endl;
                 del = l;
                 list *temp = l->child;
                 if (l->parent != 0) {
                     l = l->parent;
+                    temp->parent = l;
                     l->child = temp;
                 } else {
                     l = l->child;
@@ -251,9 +276,8 @@ void deleteNode(node *p) {
         if (l->child == 0 && del == 0) {
             if (l->q == p) {
                 del = l;
-                list *temp = l->child;
                 l = l->parent;
-                l->child = temp;
+                l->child = 0;
             } else {
                 return;
             }
@@ -263,6 +287,7 @@ void deleteNode(node *p) {
     // Add deleted node to the closed list
     del->child = 0;
     del->parent = closed_list;
+    if (closed_list != 0) closed_list->child = del;
     closed_list = del;
 }
 
@@ -283,16 +308,12 @@ node* solve(char board[][3]) {
     temp->q = q;
     
     open_list = temp;
-    closed_list = NULL;
+    closed_list = 0;
     
-    // Main loop
-    // TODO: open list MUST have a parent with 0 in which it should not be
-    // Evaluated, investigate pointer...
+    // A* Algorithm
     while (open_list != 0) {
         node *p;
-        if (DEBUG)
-            cout << "Success while loop";
-        if (DEBUG)
+        if (DEBUG && display)
             cout << " open_list:" << open_list << " c:" << closed_list << endl;
         p = getLowestNode();
         
@@ -304,20 +325,20 @@ node* solve(char board[][3]) {
                 c->turn = !p->turn;
                 setto(c->board, p->board);
                 if (valid(c, i, j)) {
-                    if (DEBUG)
+                    if (DEBUG && display)
                         printBoard(c->board);
                     c->parent = p;
                     if (isSolution(c->board)) {
                         q = c;
                         solved = true;
-                        break;
+                        return q;
                     } else {
-                        if (DEBUG)
+                        if (DEBUG && display)
                             cout << "NOT SOLUTION" << endl;
                         c->f = c->parent->f + 1 + getHeuristic(c);
                         if (!alreadyOpen(c)) {
                             if (!alreadyClosed(c)) {
-                                if (DEBUG)
+                                if (DEBUG && display)
                                     cout << "ADD to LIST" << endl;
                                 temp = new list;
                                 temp->child = 0;
@@ -325,8 +346,8 @@ node* solve(char board[][3]) {
                                 temp->q = c;
                                 open_list->child = temp;
                                 open_list = temp;
-                                if (DEBUG)
-                                    cout << " open_list:" << open_list << " c:" << closed_list << endl;
+                                if (DEBUG && display)
+                                    cout << " o:" << open_list << " c:" << closed_list << endl;
                             }
                         }
                     }
@@ -343,10 +364,14 @@ node* solve(char board[][3]) {
 
 void printSolution(node *p) {
     node *x = p;
-    if (DEBUG)
+    int i = 0;
+    if (DEBUG && display)
         cout << "------------------------------printing solution------------------------------" << endl;
     while (x != 0) {
+    	i++;
+    	cout << "--" << i << "--" << endl;
         printBoard(x->board);
+    	cout << "-----" << endl;
         x = x-> parent;
     }
 }
@@ -355,12 +380,12 @@ int main() {
     char board[3][3];
     node *solution;
     
-    cout << "------------------------------A-star search algorithmn applied to knight problem" << endl;
+    cout << "----------------A-star search algorithm applied to knight problem--------------" << endl;
     
     setBoard(board);
     solution = solve(board);
     printSolution(solution);
-    if (DEBUG)
+    if (DEBUG && display)
         cout << "Returns success " << solution << endl;
     
 }
