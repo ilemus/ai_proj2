@@ -52,6 +52,15 @@ void setBoard(char board[][3]) {
     board[2][2] = 1;
 }
 
+void printBoard(char board[][3]) {
+    for (int i = 0; i < 3; i++) {
+        for (int j = 0; j < 3; j++) {
+            cout << (int)board[i][j] << " ";
+        }
+        cout << endl;
+    }
+}
+
 node* getLowestNode() {
     node *lowest = open_list->q;
     list *temp;
@@ -98,8 +107,6 @@ bool isEqual(char a[][3], char b[][3]) {
 }
 
 void setto(char a[][3], char b[][3]) {
-    if (DEBUG)
-        cout << "SUCCESS setto" << endl;
     for (int i = 0; i < 3; i++) {
         for (int j = 0; j < 3; j++) {
             a[i][j] = b[i][j];
@@ -126,6 +133,8 @@ bool valid(node *p, int x, int y) {
                         || (toPositive(i - x) == 1 && toPositive(j - y) == 2)) {
                         p->board[i][j] = 0;
                         p->board[x][y] = 2;
+                        if (DEBUG)
+                            cout << "Turn" << p->turn << "Valid x: " << x << " y: " << y << endl;
                         return true;
                     }
                 }
@@ -135,6 +144,8 @@ bool valid(node *p, int x, int y) {
                         || (toPositive(i - x) == 1 && toPositive(j - y) == 2)) {
                         p->board[i][j] = 0;
                         p->board[x][y] = 1;
+                        if (DEBUG)
+                            cout << "Turn" << p->turn << "Valid x: " << x << " y: " << y << endl;
                         return true;
                     }
                 }
@@ -203,25 +214,38 @@ bool alreadyClosed(node *q) {
 void deleteNode(node *p) {
     list *l = open_list;
     list *del = 0;
-
+    if (DEBUG)
+        cout << "Delete parent node" << endl;
     // resets the list to the beginning for searching
     while (l->parent != 0) {
         l = l->parent;
     }
     
     // if q is the only node left in the open_list then delete it
-    if (l->q == p) {
+    if (l->q == p && l->child == 0) {
         del = open_list;
         open_list = 0;
+        if (DEBUG)
+            cout << "q was the only node in open list" << endl;
     } else {
         while (l->child != 0) {
+            if (DEBUG)
+                cout << "l->child " << l->child << endl;
             if (l->q == p) {
+                if (DEBUG)
+                    cout << "Deleting node" << endl;
                 del = l;
                 list *temp = l->child;
-                l = l->parent;
-                l->child = temp;
+                if (l->parent != 0) {
+                    l = l->parent;
+                    l->child = temp;
+                } else {
+                    l = l->child;
+                    l->parent = 0;
+                }
                 break;
             }
+            l = l->child;
         }
         
         if (l->child == 0 && del == 0) {
@@ -269,17 +293,20 @@ node* solve(char board[][3]) {
         if (DEBUG)
             cout << "Success while loop";
         if (DEBUG)
-            cout << " " << open_list << " c:" << closed_list << endl;
+            cout << " open_list:" << open_list << " c:" << closed_list << endl;
         p = getLowestNode();
         
         // Search entire board for valid moves and evaluate them
         for (int i = 0; i < 3; i++) {
             for (int j = 0; j < 3; j++) {
-                if (valid(p, i, j)) {
-                    node *c;
-                    c = new node;
+                node *c;
+                c = new node;
+                c->turn = !p->turn;
+                setto(c->board, p->board);
+                if (valid(c, i, j)) {
+                    if (DEBUG)
+                        printBoard(c->board);
                     c->parent = p;
-                    c->turn = !p->turn;
                     if (isSolution(c->board)) {
                         q = c;
                         solved = true;
@@ -290,11 +317,16 @@ node* solve(char board[][3]) {
                         c->f = c->parent->f + 1 + getHeuristic(c);
                         if (!alreadyOpen(c)) {
                             if (!alreadyClosed(c)) {
+                                if (DEBUG)
+                                    cout << "ADD to LIST" << endl;
                                 temp = new list;
                                 temp->child = 0;
                                 temp->parent = open_list;
                                 temp->q = c;
+                                open_list->child = temp;
                                 open_list = temp;
+                                if (DEBUG)
+                                    cout << " open_list:" << open_list << " c:" << closed_list << endl;
                             }
                         }
                     }
