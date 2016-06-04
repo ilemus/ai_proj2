@@ -9,6 +9,8 @@ struct node {
     node *parent;
     char board[3][3];
     int f; //current distance from epoch
+    int g;
+    int h;
     bool turn; //true: red, false: blue
 };
 
@@ -294,13 +296,14 @@ void deleteNode(node *p) {
 node* solve(char board[][3]) {
     node *q;
     list *temp;
-    bool solved = false;
     // Setup queue and initial node
     temp = new list;
     q = new node;
     q->parent = NULL;
     setto(q->board, board);
     q->f = 0;
+    q->g = 0;
+    q->h = 0;
     q->turn = true;
     
     temp->child = 0;
@@ -310,6 +313,8 @@ node* solve(char board[][3]) {
     open_list = temp;
     closed_list = 0;
     
+    int attempts = 0;
+
     // A* Algorithm
     while (open_list != 0) {
         node *p;
@@ -330,12 +335,16 @@ node* solve(char board[][3]) {
                     c->parent = p;
                     if (isSolution(c->board)) {
                         q = c;
-                        solved = true;
+                        cout << "Number of attempts: " << attempts << endl;
                         return q;
                     } else {
                         if (DEBUG && display)
                             cout << "NOT SOLUTION" << endl;
-                        c->f = c->parent->f + 1 + getHeuristic(c);
+                        c->g = c->parent->f + 1;
+                        c->h = getHeuristic(c);
+                        c->f = c->g + c->h;
+                        if (DEBUG && display)
+                        	cout << "f=" << c->f << ", g=" << c->g << ", h=" << c->h << endl;
                         if (!alreadyOpen(c)) {
                             if (!alreadyClosed(c)) {
                                 if (DEBUG && display)
@@ -346,6 +355,7 @@ node* solve(char board[][3]) {
                                 temp->q = c;
                                 open_list->child = temp;
                                 open_list = temp;
+                                attempts++;
                                 if (DEBUG && display)
                                     cout << " o:" << open_list << " c:" << closed_list << endl;
                             }
@@ -355,9 +365,6 @@ node* solve(char board[][3]) {
             }
         }
         deleteNode(p);
-        if (solved) {
-            break;
-        }
     }
     return q;
 }
